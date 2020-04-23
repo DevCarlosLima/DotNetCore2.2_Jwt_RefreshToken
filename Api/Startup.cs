@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -80,7 +81,25 @@ namespace Api {
                 app.UseHsts ();
             }
 
+            app.UseSwagger ();
+            app.UseSwaggerUI (options => {
+                options.SwaggerEndpoint ("/swagger/v1/swagger.json", "API V1");
+            });
+
+            var rewrite = new RewriteOptions ();
+            rewrite.AddRedirect ("^$", "swagger");
+
+            app.UseCors (
+                options => options
+                .AllowAnyOrigin ()
+                .AllowAnyMethod ()
+                .AllowAnyHeader ()
+                .AllowCredentials ()
+                //.WithOrigins("www.site.com")
+            );
+            app.UseRewriter (rewrite);
             app.UseHttpsRedirection ();
+            app.UseAuthentication ();
             app.UseMvc ();
         }
     }
